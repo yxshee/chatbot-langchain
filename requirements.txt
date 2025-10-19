@@ -1,0 +1,40 @@
+# Core LangChain and Gemini
+langchain==0.2.16
+langchain-community==0.2.16
+langchain-google-genai==1.0.10
+langsmith==0.1.129
+
+# Vector stores and embeddings
+faiss-cpu==1.8.0
+chromadb==0.5.5
+
+# PDF processing
+pypdf==4.3.1
+pymupdf==1.24.10
+
+# Text splitting and utilities
+tiktoken==0.7.0
+
+# Web scraping for FAQ
+requests==2.32.3
+beautifulsoup4==4.12.3
+lxml==5.3.0
+
+# API and server
+fastapi==0.112.1
+uvicorn[standard]==0.30.6
+pydantic==2.8.2
+
+# Environment management
+python-dotenv==1.0.1
+
+# Data science and evaluation
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.1
+
+# Logging
+structlog==24.4.0
+
+# Web Interface
+streamlit>=1.37.0
