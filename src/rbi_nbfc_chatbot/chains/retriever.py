@@ -5,16 +5,30 @@ This module creates and manages the FAISS retriever for document search.
 
 import os
 from typing import Optional
+import faiss
+
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.schema.retriever import BaseRetriever
 
 from ..config import (
     GOOGLE_API_KEY,
-    EMBEDDING_MODEL,
+    GOOGLE_EMBEDDING_MODEL,
     VECTOR_STORE_PATH,
     RETRIEVAL_K
 )
+
+
+def _read_faiss_dimension(index_path: str) -> Optional[int]:
+    """Read the dimension (d) from a FAISS index on disk, if present."""
+    try:
+        candidate = os.path.join(index_path, "index.faiss")
+        if os.path.exists(candidate):
+            idx = faiss.read_index(candidate)
+            return int(getattr(idx, "d", 0)) or None
+    except Exception:
+        return None
+    return None
 
 
 def create_retriever(
@@ -40,8 +54,8 @@ def create_retriever(
     # Use defaults from config
     index_path = index_path or VECTOR_STORE_PATH
     k = k or RETRIEVAL_K
+
     api_key = api_key or GOOGLE_API_KEY
-    
     if not api_key:
         raise ValueError("Google API key is required. Set GOOGLE_API_KEY in .env file")
     
@@ -50,11 +64,19 @@ def create_retriever(
             f"FAISS index not found at {index_path}. "
             "Please run document ingestion first."
         )
-    
+
+    # Sanity check: bundled index is created with Gemini embeddings (768-d).
+    index_dim = _read_faiss_dimension(index_path)
+    if index_dim is not None and index_dim != 768:
+        raise ValueError(
+            f"The FAISS index on disk is {index_dim}-dimensional, but this project is configured "
+            "for Gemini embeddings (768-d). Rebuild the vector store with the provided ingestion pipeline."
+        )
+
     # Initialize embeddings
     embeddings = GoogleGenerativeAIEmbeddings(
-        model=EMBEDDING_MODEL,
-        google_api_key=api_key
+        model=GOOGLE_EMBEDDING_MODEL,
+        google_api_key=api_key,
     )
     
     # Load vector store
@@ -70,20 +92,3 @@ def create_retriever(
     )
     
     return retriever
-
-
-def get_relevant_documents(query: str, retriever: Optional[BaseRetriever] = None):
-    """
-    Retrieve relevant documents for a query.
-    
-    Args:
-        query: Search query
-        retriever: Retriever instance (if None, creates new one)
-    
-    Returns:
-        List of relevant documents
-    """
-    if retriever is None:
-        retriever = create_retriever()
-    
-    return retriever.get_relevant_documents(query)

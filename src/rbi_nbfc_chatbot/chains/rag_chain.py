@@ -4,18 +4,14 @@ This module provides the complete Retrieval-Augmented Generation pipeline
 for answering questions about RBI NBFC regulations.
 """
 
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 
 from .retriever import create_retriever
-from ..config import (
-    GOOGLE_API_KEY,
-    GEMINI_MODEL,
-    TEMPERATURE,
-    RETRIEVAL_K
-)
+from ..config import GOOGLE_API_KEY, GEMINI_MODEL, TEMPERATURE, RETRIEVAL_K
 
 # Default prompt template for RBI NBFC questions
 DEFAULT_PROMPT_TEMPLATE = """You are an expert assistant for RBI (Reserve Bank of India) NBFC (Non-Banking Financial Company) regulations.
@@ -66,16 +62,15 @@ class RAGChain:
         self.model_name = model_name or GEMINI_MODEL
         self.temperature = temperature if temperature is not None else TEMPERATURE
         self.k = k or RETRIEVAL_K
+
+        # Google Gemini
         self.api_key = api_key or GOOGLE_API_KEY
-        
         if not self.api_key:
             raise ValueError("Google API key is required. Set GOOGLE_API_KEY in .env file")
-        
-        # Initialize LLM
         self.llm = ChatGoogleGenerativeAI(
             model=self.model_name,
             google_api_key=self.api_key,
-            temperature=self.temperature
+            temperature=self.temperature,
         )
         
         # Create retriever
@@ -113,7 +108,8 @@ class RAGChain:
                 - question: The original question
         """
         # Query the chain
-        result = self.qa_chain({"query": question})
+        # `Chain.__call__` is deprecated; prefer `invoke`.
+        result = self.qa_chain.invoke({"query": question})
         
         # Format response
         response = {

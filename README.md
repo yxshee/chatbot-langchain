@@ -1,247 +1,159 @@
 # 🏦 RBI NBFC Chatbot - Intelligent Regulatory Assistant
 
-> **25-word description**: A sophisticated RAG-powered chatbot that answers RBI NBFC regulatory questions using Google Gemini AI, FAISS vector search, and 716 document chunks from official RBI guidelines.
+> **A sophisticated RAG-powered chatbot** using Google Gemini AI, FAISS vector search, and 716 document chunks from official RBI guidelines.
 
 ---
 
-## 🎯 What This Does
+## 🚀 Quick Start (3 Commands)
 
-✨ **Processes 330-page RBI Master Direction** → **716 smart chunks** → **Accurate answers with citations**
-
-🎨 **Multiple Interfaces**: CLI 💻 | Web API 🌐 | Streamlit UI 🎭 | Demo Modes 🎬
-
-📊 **Evaluation Framework**: LangSmith integration with 23 FAQ questions
-
-🏆 **Production-Ready**: Error handling, logging, comprehensive testing
-
----
-
-## 🚀 Quick Start (3 Steps)
-
-### 1. Setup Environment
 ```bash
+# 1. Setup
 pip install -r requirements.txt
-cp .env.example .env  # Add your API keys
+cp .env.example .env  # Add your GOOGLE_API_KEY
+
+# 2. Quick test
+python scripts/quick_start.py
+
+# 3. Choose your interface:
+streamlit run streamlit_app.py          # Web UI (recommended)
+python examples/demo_interactive.py     # CLI chat
+python examples/demo_api.py             # API server
+python examples/demo_faq.py             # FAQ demo
 ```
 
-### 2. Verify Everything Works
+---
+
+## 📋 What This Does
+
+✨ **330-page RBI Master Direction** → **716 smart chunks** → **Accurate answers with citations**
+
+### Interfaces Available:
+
+| Interface | Command | Use Case |
+|-----------|---------|----------|
+| **🌐 Web UI** | `streamlit run streamlit_app.py` | Best for demos, presentations |
+| **💬 Interactive CLI** | `python examples/demo_interactive.py` | Quick Q&A sessions |
+| **🔌 REST API** | `python examples/demo_api.py` | Integration, automation |
+| **📚 FAQ Demo** | `python examples/demo_faq.py` | Pre-loaded questions |
+
+---
+
+## 🔧 Complete Testing
+
 ```bash
-python scripts/check.py  # ✅ All systems go?
-```
+# Quick system check
+python scripts/check.py
 
-### 3. Launch Your Interface
-```bash
-# 🌐 Web App (Recommended)
-streamlit run streamlit_app.py
+# Complete test suite
+python tests/test_complete_system.py
 
-# 💻 CLI Chat
-python examples/demo_interactive.py
-
-# 🔌 API Server
-python examples/demo_api.py
+# Individual tests
+python tests/test_rag_pipeline.py
 ```
 
 ---
 
-## 🎮 Usage Options
+## 📊 Technical Stack
 
-| Interface | Command | Perfect For |
-|-----------|---------|-------------|
-| **🌐 Streamlit Web** | `streamlit run streamlit_app.py` | Interactive browsing, demos |
-| **💻 CLI Chat** | `python examples/demo_interactive.py` | Quick testing, development |
-| **� REST API** | `python examples/demo_api.py` | Integration, automation |
-| **🎬 FAQ Demo** | `python examples/demo_faq.py` | Presentations, videos |
-
----
-
-## 🛠️ Technical Stack
-
-### 🤖 AI Models
-- **LLM**: Google Gemini 2.5 Flash (`gemini-2.5-flash`)
-- **Embeddings**: Google `text-embedding-004` (768-dim)
-- **Vector DB**: FAISS (716 chunks, k=4 retrieval)
-
-### 🏗️ Architecture
-```
-📄 RBI PDF (330 pages)
-    ↓
-🔍 Smart Text Splitting (1000 chars + 200 overlap)
-    ↓
-🧮 Google Embeddings → FAISS Vector Store
-    ↓
-❓ User Question → Vector Search → Context Retrieval
-    ↓
-🤖 Gemini AI → Answer Generation + Source Citations
-    ↓
-💬 Response with References
-```
+- **LLM**: Google Gemini 2.5 Flash
+- **Embeddings**: Google text-embedding-004 (768-dim)
+- **Vector DB**: FAISS (716 chunks)
+- **Framework**: LangChain 0.2.16
+- **API**: FastAPI + Streamlit
 
 ---
 
-## 📋 Prerequisites
+## 🎯 Key Features
 
-- ✅ Python 3.10+
-- ✅ Google API Key ([Get here](https://makersuite.google.com/app/apikey))
-- ✅ LangSmith API Key ([Optional](https://smith.langchain.com/settings))
-- ✅ 8GB RAM recommended
+✅ **716 optimized chunks** from RBI Master Direction  
+✅ **4-document retrieval** for accurate context  
+✅ **Source attribution** for all answers  
+✅ **Multiple interfaces** (Web, CLI, API)  
+✅ **Production-ready** error handling  
+✅ **LangSmith integration** for evaluation  
 
 ---
 
-## 🔧 Configuration
+## 🔑 Configuration
 
-### Environment Variables (`.env`)
-```bash
+Create `.env` file:
+
+```env
 GOOGLE_API_KEY=your_google_api_key_here
-LANGSMITH_API_KEY=your_langsmith_api_key_here  # Optional
+LANGSMITH_API_KEY=your_langsmith_key_here  # Optional
+GEMINI_MODEL=gemini-2.5-flash
+RETRIEVAL_K=4
 ```
 
-### Key Settings
-- **Model**: `gemini-2.5-flash` (deterministic, temp=0.1)
-- **Retrieval**: Top-4 most relevant chunks
-- **Chunk Size**: 1000 characters with 200 overlap
-
----
-
-## � Evaluation & Testing
-
-### Run Evaluations
-```bash
-# Create dataset (23 RBI FAQ questions)
-python -m src.evals.build_dataset_from_rbi_faq
-
-# Run comprehensive evaluation
-python -m src.evals.run_eval --dataset "RBI-NBFC-FAQ-v1"
-```
-
-### Metrics Tracked
-- 🎯 **Correctness**: Answer accuracy vs reference
-- 🔗 **Faithfulness**: Grounded in source documents
-- 🎪 **Relevancy**: Addresses the question
-- 📏 **Conciseness**: Appropriate answer length
-
-**View Results**: [LangSmith Dashboard](https://smith.langchain.com)
+Get API keys:
+- Google AI: https://makersuite.google.com/app/apikey
+- LangSmith: https://smith.langchain.com/settings
 
 ---
 
 ## 📁 Project Structure
 
 ```
-🏗️ chatbot-langchain/
-├── 🎨 streamlit_app.py          # Web interface
-├── 🔌 src/rbi_nbfc_chatbot/     # Core modules
-│   ├── 🤖 chains/               # RAG pipeline
-│   ├── 🔍 utils/                # PDF processing
-│   └── 📊 evals/                # Evaluation system
-├── 📚 data/                     # Vector store & documents
-├── 🎬 examples/                 # Demo scripts
-├── 🧪 tests/                    # Test suite
-└── 📖 docs/                     # Documentation
+chatbot-langchain/
+├── streamlit_app.py              # Web UI
+├── src/rbi_nbfc_chatbot/        # Core package
+│   ├── chains/                  # RAG pipeline
+│   ├── utils/                   # Document processing
+│   ├── api/                     # FastAPI server
+│   └── evals/                   # Evaluation tools
+├── examples/                     # Demo scripts
+├── tests/                        # Test suite
+├── data/                         # Vector store & documents
+└── scripts/                      # Utility scripts
 ```
 
 ---
 
-## 🎥 Demo Scripts
+## 🎥 Video Demonstration Flow
 
-### Interactive FAQ Demo
-```bash
-python examples/demo_faq.py
-```
-Shows 10 carefully selected questions with full pipeline demonstration.
-
-### CLI System Test
-```bash
-python examples/demo_cli.py
-```
-Comprehensive testing: model connection → embeddings → retrieval → answers.
-
-### API Testing
-```bash
-# Start server
-python examples/demo_api.py
-
-# Test endpoint
-curl -X POST http://localhost:8000/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question":"What is NBFC capital requirement?"}'
-```
+1. **Quick Start**: `python scripts/quick_start.py`
+2. **FAQ Demo**: `python examples/demo_faq.py`
+3. **Interactive Chat**: `python examples/demo_interactive.py`
+4. **Web UI**: `streamlit run streamlit_app.py`
+5. **API Testing**: `python examples/demo_api.py`
+6. **Full Tests**: `python tests/test_complete_system.py`
 
 ---
 
 ## 🔍 Troubleshooting
 
-### Common Issues & Fixes
+| Issue | Solution |
+|-------|----------|
+| API Key Error | Add `GOOGLE_API_KEY` to `.env` |
+| FAISS Not Found | Run `python -m src.rbi_nbfc_chatbot.utils.ingest` |
+| Import Errors | `pip install -r requirements.txt` |
+| Wrong Model | Use `gemini-1.5-flash` in `.env` |
 
-| Problem | Solution |
-|---------|----------|
-| 🔑 **API Key Error** | Add `GOOGLE_API_KEY=your_key` to `.env` |
-| 📁 **FAISS Not Found** | Run `python -m src.rbi_nbfc_chatbot.utils.ingest` |
-| 📦 **Import Errors** | `pip install -r requirements.txt` |
-| 🔌 **Port 8000 Busy** | Change port: `--port 8001` |
-| 🤖 **Wrong Model** | Use `gemini-2.5-flash` in config |
+**Quick Fix**: `python scripts/check.py` for diagnosis
 
-### Verification Commands
+---
+
+## 📈 Performance
+
+- ⚡ **2-5 seconds** per query
+- 🎯 **716 chunks** searchable
+- 🔍 **Top-4** document retrieval
+- 💾 **~4GB** memory usage
+
+---
+
+## 📚 Evaluation
+
 ```bash
-python scripts/check.py           # Full system check
-python tests/test_rag_pipeline.py # Pipeline test
-python examples/demo_cli.py       # Quick functionality test
+# Run comprehensive evaluation
+python -m src.rbi_nbfc_chatbot.evals.langsmith_eval
+
+# Or import and use
+from src.rbi_nbfc_chatbot.evals import run_evaluation
+run_evaluation()
 ```
 
----
-
-## � Performance
-
-- ⚡ **Response Time**: 2-5 seconds per question
-- 🎯 **Accuracy**: Evaluated with LangSmith metrics
-- 📊 **Vector Store**: 716 optimized chunks
-- 🔍 **Retrieval**: Top-4 relevant documents
-- 💾 **Memory**: ~4GB for vector store
-
----
-
-## 🎬 Video Recording Guide
-
-### Recording Flow (15 minutes)
-1. **Intro** (2min): Project overview, tech stack
-2. **Components** (4min): Explain RAG pipeline, models, vector search
-3. **Demos** (6min): FAQ demo, interactive chat, API testing
-4. **Evaluation** (2min): LangSmith metrics, dataset creation
-5. **Wrap-up** (1min): Final status, key achievements
-
-### Pro Tips
-- 🎥 Use Loom or screen recorder at 1080p
-- 🗣️ Speak clearly, explain each step
-- 💻 Maximize terminal for clarity
-- 🎯 Show actual outputs, not just commands
-
----
-
-## 📚 Key Concepts
-
-- **🔍 RAG**: Retrieval-Augmented Generation combines search + AI
-- **🧮 Embeddings**: Text converted to numerical vectors for similarity
-- **⚡ FAISS**: Facebook's fast vector similarity search
-- **🔗 LangChain**: Framework for LLM applications
-- **📊 LangSmith**: Evaluation and monitoring platform
-
----
-
-## � Important Notes
-
-- 📄 **Source**: RBI Master Direction – NBFC (Scale Based Regulation) Directions
-- ❓ **FAQ Data**: Official RBI NBFC FAQ (April 23, 2025)
-- 🧪 **Testing**: 23 questions covering key regulatory topics
-- 🤖 **Model**: Google Gemini 2.5 Flash for production use
-- 🛠️ **Framework**: LangChain 0.2.16 with compatible dependencies
-
----
-
-## 🤝 Support
-
-**Need Help?**
-1. Run `python scripts/check.py` for diagnostics
-2. Check terminal logs for error details
-3. Verify `.env` has correct API keys
-4. Ensure FAISS index exists in `data/vector_store/`
+View results on [LangSmith Dashboard](https://smith.langchain.com)
 
 ---
 
