@@ -3,13 +3,15 @@
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime
-from typing import Dict, Any, Optional, List
+from typing import Any, Dict, List, Optional
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from ..chains import build_rag_chain, RAGChain
-from ..config import GEMINI_MODEL, API_HOST, API_PORT
+from ..chains import RAGChain, build_rag_chain
+from ..config import API_HOST, API_PORT, GEMINI_MODEL
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -81,12 +83,12 @@ _rag_chain: Optional[RAGChain] = None
 def get_rag_chain() -> RAGChain:
     """Get or initialize the RAG chain."""
     global _rag_chain
-    
+
     if _rag_chain is None:
         print("🔄 Initializing RAG chain...")
         _rag_chain = build_rag_chain()
         print("✅ RAG chain initialized!")
-    
+
     return _rag_chain
 
 
@@ -159,17 +161,17 @@ async def ask_question(request: QuestionRequest):
     ```
     """
     start_time = time.time()
-    
+
     try:
         # Get RAG chain
         rag_chain = get_rag_chain()
-        
+
         # Process question
         response = rag_chain.ask_question(request.question, return_sources=True)
-        
+
         # Limit sources to requested amount
         sources = response.get("sources", [])[:request.max_sources]
-        
+
         # Format sources for API response
         formatted_sources = [
             {
@@ -180,10 +182,10 @@ async def ask_question(request: QuestionRequest):
             }
             for i, src in enumerate(sources)
         ]
-        
+
         # Calculate processing time
         processing_time = (time.time() - start_time) * 1000
-        
+
         return QuestionResponse(
             question=request.question,
             answer=response["answer"],
@@ -192,7 +194,7 @@ async def ask_question(request: QuestionRequest):
             model=response["model"],
             processing_time_ms=round(processing_time, 2)
         )
-        
+
     except FileNotFoundError as e:
         raise HTTPException(
             status_code=503,
@@ -207,9 +209,9 @@ async def ask_question(request: QuestionRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     print(f"🌐 Starting server at http://{API_HOST}:{API_PORT}")
     print(f"📝 API Documentation: http://{API_HOST}:{API_PORT}/docs")
     print()
-    
+
     uvicorn.run(app, host=API_HOST, port=API_PORT)

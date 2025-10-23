@@ -4,14 +4,14 @@ This module provides the complete Retrieval-Augmented Generation pipeline
 for answering questions about RBI NBFC regulations.
 """
 
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
 
+from ..config import GEMINI_MODEL, GOOGLE_API_KEY, RETRIEVAL_K, TEMPERATURE
 from .retriever import create_retriever
-from ..config import GOOGLE_API_KEY, GEMINI_MODEL, TEMPERATURE, RETRIEVAL_K
 
 # Default prompt template for RBI NBFC questions
 DEFAULT_PROMPT_TEMPLATE = """You are an expert assistant for RBI (Reserve Bank of India) NBFC (Non-Banking Financial Company) regulations.
@@ -40,7 +40,7 @@ class RAGChain:
     This class wraps the LangChain RAG pipeline and provides a clean interface
     for asking questions about RBI regulations.
     """
-    
+
     def __init__(
         self,
         model_name: Optional[str] = None,
@@ -72,17 +72,17 @@ class RAGChain:
             google_api_key=self.api_key,
             temperature=self.temperature,
         )
-        
+
         # Create retriever
         self.retriever = create_retriever(k=self.k, api_key=self.api_key)
-        
+
         # Create prompt
         template = prompt_template or DEFAULT_PROMPT_TEMPLATE
         self.prompt = PromptTemplate(
             template=template,
             input_variables=["context", "question"]
         )
-        
+
         # Create QA chain
         self.qa_chain = RetrievalQA.from_chain_type(
             llm=self.llm,
@@ -91,7 +91,7 @@ class RAGChain:
             chain_type_kwargs={"prompt": self.prompt},
             return_source_documents=True
         )
-    
+
     def ask_question(self, question: str, return_sources: bool = True) -> Dict[str, Any]:
         """
         Ask a question about RBI NBFC regulations.
@@ -110,14 +110,14 @@ class RAGChain:
         # Query the chain
         # `Chain.__call__` is deprecated; prefer `invoke`.
         result = self.qa_chain.invoke({"query": question})
-        
+
         # Format response
         response = {
             "question": question,
             "answer": result.get("result", ""),
             "model": self.model_name
         }
-        
+
         # Add sources if requested
         if return_sources:
             source_docs = result.get("source_documents", [])
@@ -129,9 +129,9 @@ class RAGChain:
                 }
                 for doc in source_docs
             ]
-        
+
         return response
-    
+
     def ask(self, question: str) -> str:
         """
         Ask a question and return just the answer text.

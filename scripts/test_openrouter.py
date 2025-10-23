@@ -6,7 +6,6 @@ This repository is now intentionally simplified to use Google Gemini only,
 to match the bundled FAISS index (768-dim embeddings).
 """
 
-import sys
 
 
 def main() -> int:

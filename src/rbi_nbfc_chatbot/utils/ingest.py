@@ -1,21 +1,21 @@
 """Document ingestion and vector store creation."""
 
 import os
-from typing import Optional, List
 from pathlib import Path
+from typing import List, Optional
+
 import faiss
-
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_community.vectorstores import FAISS
 from langchain.schema import Document
+from langchain_community.vectorstores import FAISS
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-from .document_loader import load_pdf, split_documents
 from ..config import (
     GOOGLE_API_KEY,
     GOOGLE_EMBEDDING_MODEL,
-    VECTOR_STORE_PATH,
     PDF_PATH,
+    VECTOR_STORE_PATH,
 )
+from .document_loader import load_pdf, split_documents
 
 
 def _read_faiss_dimension(index_path: str) -> Optional[int]:
@@ -50,24 +50,24 @@ def build_vector_store(
     if not api_key:
         raise ValueError("Google API key is required. Set GOOGLE_API_KEY in .env file")
     output_path = output_path or VECTOR_STORE_PATH
-    
+
     # Initialize embeddings
     embeddings = GoogleGenerativeAIEmbeddings(
         model=GOOGLE_EMBEDDING_MODEL,
         google_api_key=api_key,
     )
-    
+
     # Create vector store
     print(f"Creating vector store from {len(documents)} document chunks...")
     vectorstore = FAISS.from_documents(documents, embeddings)
-    
+
     # Save vector store
     output_dir = Path(output_path).parent
     output_dir.mkdir(parents=True, exist_ok=True)
-    
+
     vectorstore.save_local(output_path)
     print(f"✅ Vector store saved to {output_path}")
-    
+
     return vectorstore
 
 
@@ -96,7 +96,7 @@ def ingest_documents(
     """
     pdf_path = pdf_path or str(PDF_PATH)
     output_path = output_path or VECTOR_STORE_PATH
-    
+
     # Check if vector store already exists
     if not force and os.path.exists(output_path):
         print(f"Vector store already exists at {output_path}")
@@ -121,25 +121,25 @@ def ingest_documents(
             allow_dangerous_deserialization=True
         )
         return vectorstore
-    
+
     print("=" * 70)
     print("📚 DOCUMENT INGESTION PIPELINE")
     print("=" * 70)
-    
+
     # Step 1: Load PDF
     print(f"\n1️⃣ Loading PDF: {pdf_path}")
     documents = load_pdf(pdf_path)
     print(f"   ✅ Loaded {len(documents)} pages")
-    
+
     # Step 2: Split into chunks
-    print(f"\n2️⃣ Splitting documents into chunks...")
+    print("\n2️⃣ Splitting documents into chunks...")
     chunks = split_documents(documents)
     print(f"   ✅ Created {len(chunks)} chunks")
-    
+
     # Step 3: Build vector store
-    print(f"\n3️⃣ Building vector store...")
+    print("\n3️⃣ Building vector store...")
     vectorstore = build_vector_store(chunks, api_key=api_key, output_path=output_path)
-    
+
     print("\n" + "=" * 70)
     print("✅ INGESTION COMPLETE!")
     print("=" * 70)
@@ -147,14 +147,14 @@ def ingest_documents(
     print(f"📦 Chunks: {len(chunks)}")
     print(f"💾 Vector store: {output_path}")
     print("=" * 70)
-    
+
     return vectorstore
 
 
 if __name__ == "__main__":
     """Run ingestion as standalone script."""
     import sys
-    
+
     try:
         ingest_documents(force=True)
         sys.exit(0)

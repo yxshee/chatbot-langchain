@@ -4,11 +4,12 @@ This module creates a LangSmith dataset with 23 carefully selected questions
 from the RBI NBFC FAQ (dated April 23, 2025).
 """
 
+import argparse
 import os
 import sys
-import argparse
-from langsmith import Client
+
 from dotenv import load_dotenv
+from langsmith import Client
 
 load_dotenv()
 
@@ -115,17 +116,17 @@ def create_langsmith_dataset(dataset_name="RBI-NBFC-FAQ-v1", limit=None):
     if not api_key:
         print("❌ Error: LANGSMITH_API_KEY not found")
         sys.exit(1)
-    
+
     try:
         client = Client(api_key=api_key)
         print("✅ Connected to LangSmith")
     except Exception as e:
         print(f"❌ Error: {e}")
         sys.exit(1)
-    
+
     samples_to_use = RBI_FAQ_SAMPLES[:limit] if limit else RBI_FAQ_SAMPLES
     print(f"\n📊 Preparing dataset with {len(samples_to_use)} questions...")
-    
+
     try:
         try:
             existing_dataset = client.read_dataset(dataset_name=dataset_name)
@@ -139,13 +140,13 @@ def create_langsmith_dataset(dataset_name="RBI-NBFC-FAQ-v1", limit=None):
                 sys.exit(0)
         except:
             pass
-        
+
         dataset = client.create_dataset(
             dataset_name=dataset_name,
             description=f"RBI NBFC FAQ with {len(samples_to_use)} questions from April 23, 2025."
         )
         print(f"✅ Created dataset: {dataset_name}")
-        
+
         print(f"\n📝 Adding {len(samples_to_use)} examples...")
         for idx, sample in enumerate(samples_to_use, 1):
             client.create_example(
@@ -154,10 +155,10 @@ def create_langsmith_dataset(dataset_name="RBI-NBFC-FAQ-v1", limit=None):
                 outputs={"expected_answer": sample["answer"]}
             )
             print(f"   Added {idx}/{len(samples_to_use)}: {sample['question'][:60]}...")
-        
+
         print(f"\n✅ Successfully created dataset with {len(samples_to_use)} examples")
         print("🔗 View at: https://smith.langchain.com")
-        
+
     except Exception as e:
         print(f"❌ Error: {e}")
         sys.exit(1)
@@ -169,13 +170,13 @@ def main():
     parser.add_argument("--dataset-name", type=str, default="RBI-NBFC-FAQ-v1")
     parser.add_argument("--limit", type=int, default=None)
     args = parser.parse_args()
-    
+
     print("=" * 80)
     print("RBI NBFC FAQ Dataset Builder")
     print("=" * 80)
     print(f"\nDataset: {args.dataset_name}")
     print(f"Questions: {args.limit if args.limit else 'All (23)'}\n")
-    
+
     create_langsmith_dataset(dataset_name=args.dataset_name, limit=args.limit)
 
 

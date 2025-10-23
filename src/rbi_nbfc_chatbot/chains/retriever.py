@@ -5,17 +5,17 @@ This module creates and manages the FAISS retriever for document search.
 
 import os
 from typing import Optional
-import faiss
 
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
-from langchain_community.vectorstores import FAISS
+import faiss
 from langchain.schema.retriever import BaseRetriever
+from langchain_community.vectorstores import FAISS
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from ..config import (
     GOOGLE_API_KEY,
     GOOGLE_EMBEDDING_MODEL,
+    RETRIEVAL_K,
     VECTOR_STORE_PATH,
-    RETRIEVAL_K
 )
 
 
@@ -58,7 +58,7 @@ def create_retriever(
     api_key = api_key or GOOGLE_API_KEY
     if not api_key:
         raise ValueError("Google API key is required. Set GOOGLE_API_KEY in .env file")
-    
+
     if not os.path.exists(index_path):
         raise FileNotFoundError(
             f"FAISS index not found at {index_path}. "
@@ -78,17 +78,17 @@ def create_retriever(
         model=GOOGLE_EMBEDDING_MODEL,
         google_api_key=api_key,
     )
-    
+
     # Load vector store
     vectorstore = FAISS.load_local(
         index_path,
         embeddings,
         allow_dangerous_deserialization=True
     )
-    
+
     # Create and return retriever
     retriever = vectorstore.as_retriever(
         search_kwargs={"k": k}
     )
-    
+
     return retriever
