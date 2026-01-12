@@ -3,6 +3,8 @@
 import os
 from typing import Optional, List
 from pathlib import Path
+import faiss
+
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain.schema import Document
@@ -10,10 +12,22 @@ from langchain.schema import Document
 from .document_loader import load_pdf, split_documents
 from ..config import (
     GOOGLE_API_KEY,
-    EMBEDDING_MODEL,
+    GOOGLE_EMBEDDING_MODEL,
     VECTOR_STORE_PATH,
-    PDF_PATH
+    PDF_PATH,
 )
+
+
+def _read_faiss_dimension(index_path: str) -> Optional[int]:
+    """Read the dimension (d) from a FAISS index on disk, if present."""
+    try:
+        candidate = os.path.join(index_path, "index.faiss")
+        if os.path.exists(candidate):
+            idx = faiss.read_index(candidate)
+            return int(getattr(idx, "d", 0)) or None
+    except Exception:
+        return None
+    return None
 
 
 def build_vector_store(
@@ -33,15 +47,14 @@ def build_vector_store(
         FAISS vector store instance
     """
     api_key = api_key or GOOGLE_API_KEY
-    output_path = output_path or VECTOR_STORE_PATH
-    
     if not api_key:
         raise ValueError("Google API key is required. Set GOOGLE_API_KEY in .env file")
+    output_path = output_path or VECTOR_STORE_PATH
     
     # Initialize embeddings
     embeddings = GoogleGenerativeAIEmbeddings(
-        model=EMBEDDING_MODEL,
-        google_api_key=api_key
+        model=GOOGLE_EMBEDDING_MODEL,
+        google_api_key=api_key,
     )
     
     # Create vector store
@@ -88,12 +101,19 @@ def ingest_documents(
     if not force and os.path.exists(output_path):
         print(f"Vector store already exists at {output_path}")
         print("Use force=True to re-ingest")
-        
+
         # Load existing vector store
+        index_dim = _read_faiss_dimension(output_path)
+        if index_dim is not None and index_dim != 768:
+            raise ValueError(
+                f"The FAISS index on disk is {index_dim}-dimensional, but this project is configured "
+                "for Gemini embeddings (768-d). Rebuild the vector store with this ingestion pipeline."
+            )
+
         api_key = api_key or GOOGLE_API_KEY
         embeddings = GoogleGenerativeAIEmbeddings(
-            model=EMBEDDING_MODEL,
-            google_api_key=api_key
+            model=GOOGLE_EMBEDDING_MODEL,
+            google_api_key=api_key,
         )
         vectorstore = FAISS.load_local(
             output_path,

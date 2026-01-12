@@ -1,12 +1,12 @@
-# Core LangChain and Gemini
+# Core LangChain and OpenRouter
 langchain==0.2.16
 langchain-community==0.2.16
-langchain-google-genai==1.0.10
+langchain-core==0.2.41
+langchain-google-genai>=1.0.0
 langsmith==0.1.129
 
 # Vector stores and embeddings
 faiss-cpu==1.8.0
-chromadb==0.5.5
 
 # PDF processing
 pypdf==4.3.1
@@ -38,3 +38,6 @@ structlog==24.4.0
 
 # Web Interface
 streamlit>=1.37.0
+
+# Testing
+pytest>=8.0.0

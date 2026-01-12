@@ -40,7 +40,7 @@ def demo_retrieval():
             print("-" * 40)
             
             # Retrieve relevant documents
-            docs = retriever.get_relevant_documents(question)
+            docs = retriever.invoke(question)
             print(f"📄 Found {len(docs)} relevant documents")
             
             # Show first document snippet

@@ -1,6 +1,7 @@
 """FastAPI server for RBI NBFC Chatbot."""
 
 import time
+from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 from fastapi import FastAPI, HTTPException
@@ -10,13 +11,43 @@ from pydantic import BaseModel
 from ..chains import build_rag_chain, RAGChain
 from ..config import GEMINI_MODEL, API_HOST, API_PORT
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """FastAPI lifespan handler.
+
+    Replaces deprecated @app.on_event("startup") while keeping the same behavior:
+    attempt to initialize the RAG chain at startup, but fall back to lazy init.
+    """
+    print("=" * 70)
+    print("🚀 RBI NBFC Chatbot API Starting...")
+    print("=" * 70)
+
+    try:
+        get_rag_chain()
+        print("✅ API ready to accept requests!")
+    except Exception as e:
+        print(f"⚠️  Warning: Could not initialize chatbot on startup: {e}")
+        print("   Chatbot will be initialized on first request.")
+
+    print("=" * 70)
+    print("📡 API Endpoints:")
+    print("   GET  /          - API information")
+    print("   GET  /health    - Health check")
+    print("   POST /ask       - Ask a question")
+    print("   GET  /docs      - Interactive API documentation")
+    print("=" * 70)
+
+    yield
+
+
 # Initialize FastAPI app
 app = FastAPI(
     title="RBI NBFC Chatbot API",
     description="Ask questions about RBI NBFC regulations using RAG pipeline",
     version="2.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Add CORS middleware
@@ -92,7 +123,8 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
         "chatbot_initialized": _rag_chain is not None,
-        "model": GEMINI_MODEL
+        "model": GEMINI_MODEL,
+        "provider": "google",
     }
 
 
@@ -171,29 +203,6 @@ async def ask_question(request: QuestionRequest):
             status_code=500,
             detail=f"Error processing question: {str(e)}"
         )
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize chatbot on startup."""
-    print("=" * 70)
-    print("🚀 RBI NBFC Chatbot API Starting...")
-    print("=" * 70)
-    
-    try:
-        get_rag_chain()
-        print("✅ API ready to accept requests!")
-    except Exception as e:
-        print(f"⚠️  Warning: Could not initialize chatbot on startup: {e}")
-        print("   Chatbot will be initialized on first request.")
-    
-    print("=" * 70)
-    print("📡 API Endpoints:")
-    print("   GET  /          - API information")
-    print("   GET  /health    - Health check")
-    print("   POST /ask       - Ask a question")
-    print("   GET  /docs      - Interactive API documentation")
-    print("=" * 70)
 
 
 if __name__ == "__main__":
