@@ -6,7 +6,6 @@ This is equivalent to running the ingestion pipeline with force=True.
 """
 
 import sys
-import os
 from pathlib import Path
 
 # Add project root
@@ -18,17 +17,17 @@ print("=" * 80)
 try:
     from dotenv import load_dotenv
     load_dotenv()
-    
+
     print("✅ Environment loaded")
-    
+
     from src.rbi_nbfc_chatbot.utils.ingest import ingest_documents
-    
+
     print("✅ Modules imported")
     print("\nRebuilding vector store with Gemini embeddings...")
     print("This will take 5-10 minutes...\n")
-    
+
     vectorstore = ingest_documents(force=True)
-    
+
     print("\n" + "=" * 80)
     print("✅ SUCCESS! Vector store rebuilt with Gemini embeddings")
     print("=" * 80)
@@ -37,7 +36,7 @@ try:
     print("  python examples/demo_interactive.py")
     print("  python examples/demo_faq.py")
     print()
-    
+
 except KeyboardInterrupt:
     print("\n\n⚠️  Rebuild interrupted by user")
     sys.exit(1)

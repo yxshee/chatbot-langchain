@@ -20,10 +20,9 @@ load_dotenv()
 from src.rbi_nbfc_chatbot.api import app
 from src.rbi_nbfc_chatbot.config import API_HOST, API_PORT
 
-
 if __name__ == "__main__":
     import uvicorn
-    
+
     print("=" * 70)
     print("🚀 RBI NBFC Chatbot API Demo")
     print("=" * 70)
@@ -36,5 +35,5 @@ if __name__ == "__main__":
     print('     -H "Content-Type: application/json" \\')
     print('     -d \'{"question": "What is an NBFC?"}\'')
     print("\n" + "=" * 70 + "\n")
-    
+
     uvicorn.run(app, host=API_HOST, port=API_PORT)

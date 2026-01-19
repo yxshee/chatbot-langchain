@@ -6,14 +6,13 @@ Gemini + FAISS RAG pipeline unchanged.
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import streamlit as st
-import sys
-
 from dotenv import load_dotenv
 
 # Add project root to path
@@ -22,13 +21,12 @@ sys.path.insert(0, str(Path(__file__).parent))
 from src.rbi_nbfc_chatbot.chains import build_rag_chain
 from src.rbi_nbfc_chatbot.config import (
     GEMINI_MODEL,
+    GOOGLE_API_KEY,
+    PDF_PATH,
     RETRIEVAL_K,
     TEMPERATURE,
-    PDF_PATH,
     VECTOR_STORE_PATH,
-    GOOGLE_API_KEY,
 )
-
 
 load_dotenv()
 

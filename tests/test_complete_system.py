@@ -8,6 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 def check_1_environment() -> bool:
@@ -19,7 +20,7 @@ def check_1_environment() -> bool:
     print("\n" + "="*70)
     print("TEST 1: Environment Configuration")
     print("="*70)
-    
+
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
         # When executed under pytest (e.g., CI), skip instead of hard-failing.
@@ -51,20 +52,16 @@ def check_2_imports() -> bool:
     print("\n" + "="*70)
     print("TEST 2: Module Imports")
     print("="*70)
-    
+
     try:
-        from src.rbi_nbfc_chatbot import config
         print("✅ Config module")
-        
-        from src.rbi_nbfc_chatbot.chains import build_rag_chain, RAGChain
+
         print("✅ Chain modules")
-        
-        from src.rbi_nbfc_chatbot.utils import ingest_documents
+
         print("✅ Utility modules")
-        
-        from src.rbi_nbfc_chatbot.api import app
+
         print("✅ API module")
-        
+
         return True
     except Exception as e:
         print(f"❌ Import failed: {e}")
@@ -80,23 +77,23 @@ def check_3_data_files() -> bool:
     print("\n" + "="*70)
     print("TEST 3: Data Files")
     print("="*70)
-    
-    from src.rbi_nbfc_chatbot.config import PDF_PATH, FAISS_INDEX_PATH
-    
+
+    from src.rbi_nbfc_chatbot.config import FAISS_INDEX_PATH, PDF_PATH
+
     if PDF_PATH.exists():
         size_mb = PDF_PATH.stat().st_size / 1024 / 1024
         print(f"✅ PDF file exists ({size_mb:.1f} MB)")
     else:
         print(f"❌ PDF file missing at {PDF_PATH}")
         return False
-    
+
     if FAISS_INDEX_PATH.exists():
         print("✅ FAISS index exists")
     else:
         print(f"⚠️  FAISS index not found at {FAISS_INDEX_PATH}")
         print("   Run: python -m src.rbi_nbfc_chatbot.utils.ingest")
         return False
-    
+
     return True
 
 
@@ -109,19 +106,20 @@ def check_4_embeddings() -> bool:
     print("\n" + "="*70)
     print("TEST 4: Embeddings Generation")
     print("="*70)
-    
+
     try:
         from langchain_google_genai import GoogleGenerativeAIEmbeddings
-        from src.rbi_nbfc_chatbot.config import GOOGLE_API_KEY, EMBEDDING_MODEL
-        
+
+        from src.rbi_nbfc_chatbot.config import EMBEDDING_MODEL, GOOGLE_API_KEY
+
         embeddings = GoogleGenerativeAIEmbeddings(
             model=EMBEDDING_MODEL,
             google_api_key=GOOGLE_API_KEY
         )
-        
+
         test_text = "What is an NBFC?"
         embedding = embeddings.embed_query(test_text)
-        
+
         print(f"✅ Generated embedding (dimension: {len(embedding)})")
         return True
     except Exception as e:
@@ -138,16 +136,16 @@ def check_5_retriever() -> bool:
     print("\n" + "="*70)
     print("TEST 5: Document Retrieval")
     print("="*70)
-    
+
     try:
         from src.rbi_nbfc_chatbot.chains import create_retriever
-        
+
         retriever = create_retriever()
-        
+
         question = "What is an NBFC?"
         # get_relevant_documents is deprecated; prefer invoke.
         docs = retriever.invoke(question)
-        
+
         print(f"✅ Retrieved {len(docs)} documents")
         print(f"   Sample: {docs[0].page_content[:100]}...")
         return True
@@ -165,17 +163,18 @@ def check_6_llm() -> bool:
     print("\n" + "="*70)
     print("TEST 6: LLM Connection")
     print("="*70)
-    
+
     try:
         from langchain_google_genai import ChatGoogleGenerativeAI
+
         from src.rbi_nbfc_chatbot.config import GEMINI_MODEL, GOOGLE_API_KEY
-        
+
         llm = ChatGoogleGenerativeAI(
             model=GEMINI_MODEL,
             google_api_key=GOOGLE_API_KEY,
             temperature=0.1
         )
-        
+
         response = llm.invoke("Say 'LLM working' if you can read this.")
         print(f"✅ LLM Response: {response.content}")
         return True
@@ -193,15 +192,15 @@ def check_7_rag_chain() -> bool:
     print("\n" + "="*70)
     print("TEST 7: Complete RAG Chain")
     print("="*70)
-    
+
     try:
         from src.rbi_nbfc_chatbot.chains import build_rag_chain
-        
+
         rag_chain = build_rag_chain()
-        
+
         question = "What is the minimum capital requirement for NBFCs?"
         response = rag_chain.ask_question(question)
-        
+
         print(f"✅ Question: {question}")
         print(f"✅ Answer: {response['answer'][:200]}...")
         print(f"✅ Sources: {len(response.get('sources', []))} documents")
@@ -222,9 +221,8 @@ def check_8_api() -> bool:
     print("\n" + "="*70)
     print("TEST 8: API Server")
     print("="*70)
-    
+
     try:
-        from src.rbi_nbfc_chatbot.api import app
         print("✅ API app imported successfully")
         print("   Start with: uvicorn src.rbi_nbfc_chatbot.api.server:app --port 8000")
         return True
@@ -242,7 +240,7 @@ def run_all_tests():
     print("\n" + "="*70)
     print("RBI NBFC CHATBOT - COMPLETE SYSTEM TEST")
     print("="*70)
-    
+
     checks = [
         check_1_environment,
         check_2_imports,
@@ -253,7 +251,7 @@ def run_all_tests():
         check_7_rag_chain,
         check_8_api,
     ]
-    
+
     results = []
     for check in checks:
         try:
@@ -262,26 +260,26 @@ def run_all_tests():
         except Exception as e:
             print(f"❌ Test crashed: {e}")
             results.append(False)
-    
+
     # Summary
     print("\n" + "="*70)
     print("TEST SUMMARY")
     print("="*70)
-    
+
     passed = sum(results)
     total = len(results)
-    
+
     print(f"\n✅ Passed: {passed}/{total}")
     print(f"❌ Failed: {total - passed}/{total}")
-    
+
     if all(results):
         print("\n🎉 ALL TESTS PASSED! System is fully functional.")
         print("\n📹 Ready for video demonstration!")
     else:
         print("\n⚠️  Some tests failed. Please fix issues above.")
-    
+
     print("="*70 + "\n")
-    
+
     return all(results)
 
 if __name__ == "__main__":

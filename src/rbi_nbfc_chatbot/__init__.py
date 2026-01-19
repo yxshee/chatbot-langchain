@@ -14,15 +14,10 @@ This package provides:
 __version__ = "2.0.0"
 
 # Core components
-from .chains import build_rag_chain, RAGChain, create_retriever
 from .api import app
-from .utils import ingest_documents, build_vector_store
-from .config import (
-    GEMINI_MODEL,
-    EMBEDDING_MODEL,
-    VECTOR_STORE_PATH,
-    PDF_PATH
-)
+from .chains import RAGChain, build_rag_chain, create_retriever
+from .config import EMBEDDING_MODEL, GEMINI_MODEL, PDF_PATH, VECTOR_STORE_PATH
+from .utils import build_vector_store, ingest_documents
 
 __all__ = [
     # RAG components
